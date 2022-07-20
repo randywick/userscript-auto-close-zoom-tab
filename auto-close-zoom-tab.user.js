@@ -14,6 +14,7 @@
 // @grant           window.onurlchange
 //
 // @match           *://*.zoom.us/*
+// @match           *://*.zoom.us/j/*
 //
 // @run-at          document-end
 // @unwrap

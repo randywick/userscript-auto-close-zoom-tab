@@ -15,6 +15,8 @@
 //
 // @match           *://*.zoom.us/*
 // @match           *://*.zoom.us/j/*
+// @match           *://zoom.us/*
+// @match           *://zoom.us/j/*
 //
 // @run-at          document-end
 // @unwrap

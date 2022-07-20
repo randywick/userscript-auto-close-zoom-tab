@@ -5,6 +5,8 @@
 // @author          Randall Wick <randall.wick@airbnb.com>
 // @namespace       http://github.com/randywick
 // @downloadURL     https://raw.github.com/randywick/userscript-auto-close-zoom-tab/main/auto-close-zoom-tab.user.js
+// @version         1.1
+// @updateURL       https://raw.github.com/randywick/userscript-auto-close-zoom-tab/main/auto-close-zoom-tab.user.js
 //
 // @license         GPLv3 - http://www.gnu.org/licenses/gpl-3.0.txt
 // @copyright       Copyright (C) 2012, by Randall Wick <randall.wick@airbnb.com>
@@ -13,9 +15,6 @@
 // @grant           window.onurlchange
 //
 // @match           *://*.zoom.us/*
-//
-// @version         1.1
-// @updateURL       https://raw.github.com/randywick/userscript-auto-close-zoom-tab/main/auto-close-zoom-tab.user.js
 //
 // @run-at          document-end
 // @unwrap

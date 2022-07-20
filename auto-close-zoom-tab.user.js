@@ -145,15 +145,14 @@
   }
 
   const main = async () => {
-    console.log('Main invoked', location)
+    console.log('Main invoked', location.href)
     if (!isPostAttendeeTab) {
       if (/#success/.test(location.hash) === true) {
         isPostAttendeeTab = true
-      } else {
-        const params = (new URL(document.location)).searchParams
-        if (params.has('mn')) {
-          isPostAttendeeTab = true
-        }
+      } else if ((new URL(document.location)).searchParams.has('mn')) {
+        isPostAttendeeTab = true
+      } else if (/^\/j\/\d{11}$/.test(location.pathname)) {
+        isPostAttendeeTab = true
       }
 
       if (isPostAttendeeTab) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          	auto-close-zoom-tab
 // @description     Automatically closes Zoom meeting chrome tabs after a given delay.
-// @version         1.1.3
+// @version         1.1.4
 //
 // @author          Randall Wick <randall.wick@airbnb.com>
 // @namespace       https://github.com/randywick
@@ -10,8 +10,7 @@
 // @license         GPLv3 - http://www.gnu.org/licenses/gpl-3.0.txt
 // @copyright       Copyright (C) 2012, by Randall Wick <randall.wick@airbnb.com>
 //
-// @grant           window.close
-// @grant           window.onurlchange
+// @grant           none
 //
 // @match           *://*.zoom.us/*
 // @match           *://*.zoom.us/j/*
@@ -45,10 +44,24 @@
  */
  (function() {
   const DEFAULT_TTL = 10
+  let running = false
   let isPostAttendeeTab = false
   let shouldAbort = false
+  let container
 
-  const createCountdownElement = () => {
+  const handleKeyUpEvent = (event) => {
+    if (/escape/i.test(event.key)) {
+      shouldAbort = true
+    }
+  }
+
+  const sleep = async (ms) => {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(), ms)
+    })
+  }
+
+  const createCountdownElement = async () => {
     const container = document.createElement('div')
     container.classList.add('aczt-container')
     container.style.fontFamily = 'Arial, Helvetica, sans-serif'
@@ -56,24 +69,27 @@
     container.style.fontWeight = 900
     container.style.textShadow = '0px 20px 40px rgba(0,0,0,0.2)'
     container.style.position = 'fixed'
-    container.style.top = 0
+    container.style.top = '100px'
     container.style.right = 0
-    container.style.bottom = 0
     container.style.left = 0
     container.style.display = 'flex'
     container.style.flexFlow = 'row nowrap'
     container.style.alignItems = 'center'
     container.style.justifyContent = 'center'
     container.style.opacity = 0
-    container.style.transition = 'opacity 1s'
+    container.style.transition = 'opacity 400ms'
     container.style.zIndex = 10000
 
     const content = document.createElement('div')
+    content.classList.add('aczt-content')
     content.style.display = 'flex'
     content.style.flexFlow = 'column nowrap'
     content.style.alignItems = 'center'
     content.style.justifyContent = 'center'
-    content.style.marginTop = '-80%'
+    content.style.border = '1px solid black'
+    content.style.padding = '20px'
+    content.style.backgroundColor = '#34282C'
+    content.style.transition = 'transform 1s, opacity 1s'
 
     const header = document.createElement('span')
     header.style.fontSize = '20px'
@@ -86,52 +102,28 @@
     timer.style.webkitTextStroke = '1px black'
 
     const footer = document.createElement('span')
-    footer.style.fontSize = '12px'
-    footer.textContent = 'Press escape or click the mouse to abort'
+    footer.classList.add('aczt-footer')
+    footer.style.fontSize = '14px'
+    footer.textContent = 'Press escape to abort'
 
-    content.appendChild(header)
-    content.appendChild(timer)
-    content.appendChild(footer)
-    container.appendChild(content)
-    document.body.appendChild(container)
+    content.append(header, timer, footer)
+    container.append(content)
+    document.body.append(container)
 
     window.getComputedStyle(container).opacity
     container.style.opacity = 1
 
-    let handleClickEvent
-    let handleKeyUpEvent
-
-    const abort = () => {
-      document.body.removeChild(container)
-      shouldAbort = true
-      document.removeEventListener('keyup', handleKeyUpEvent)
-      document.removeEventListener('click', handleClickEvent)
-    }
-
-    handleClickEvent = () => abort()
-    handleKeyUpEvent = (event) => {
-      if (/escape/i.test(event.key)) {
-        abort()
-      }
-    }
-
-    document.addEventListener('keyup', handleKeyUpEvent)
-    document.addEventListener('click', handleClickEvent)
-
     return container
   }
 
-  const sleep = async (ms) => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(), ms)
-    })
-  }
-
-  const execCountdown = async (container) => {
+  const execCountdown = async () => {
+    const content = container.querySelector('div.aczt-content')
+    const timer = container.querySelector('span.aczt-countdown')
+    const footer = container.querySelector('span.aczt-footer')
     let elapsed = 0
     while (elapsed <= DEFAULT_TTL && !shouldAbort) {
       const remaining = DEFAULT_TTL - elapsed
-      container.querySelector('span.aczt-countdown').textContent = `${remaining}`
+      timer.textContent = `${remaining}`
 
       if (remaining > 0) {
         await sleep(1000)
@@ -141,30 +133,58 @@
     }
 
     if (!shouldAbort) {
-      window.open('', '_self', '')
+      await sleep(400)
+      content.style.transform = 'rotate(5deg) translate(-20px, 40px)'
+      content.style.opacity = '0.3'
+      footer.textContent = 'I don\'t want to go!'
+      await sleep(300)
       window.close()
     }
   }
 
+  const abortLoop = async () => {
+    while (!shouldAbort) {
+      await sleep(100)
+
+      if (shouldAbort) {
+        if (container) {
+          container.style.opacity = 0
+          await sleep(1000)
+          document.body.removeChild(container)
+        }
+      }
+    }
+  }
+
   const main = async () => {
-    console.log('Main invoked', location.href)
-    if (!isPostAttendeeTab) {
-      if (/#success/.test(location.hash) === true) {
-        isPostAttendeeTab = true
-      } else if ((new URL(document.location)).searchParams.has('mn')) {
-        isPostAttendeeTab = true
-      } else if (/^\/j\/\d{11}$/.test(location.pathname)) {
-        isPostAttendeeTab = true
+    if (!running) {
+      running = true
+      document.addEventListener('keyup', handleKeyUpEvent)
+      abortLoop()
+
+      await sleep(5000)
+
+      if (!isPostAttendeeTab && !shouldAbort) {
+        if (/#success/.test(location.hash) === true) {
+          isPostAttendeeTab = true
+        } else if ((new URL(location)).searchParams.has('mn')) {
+          isPostAttendeeTab = true
+        } else if (/^\/j\/\d{8,}$/.test(location.pathname)) {
+          isPostAttendeeTab = true
+        }
+
+        if (isPostAttendeeTab) {
+          container = await createCountdownElement()
+          await execCountdown()
+        }
       }
 
-      if (isPostAttendeeTab) {
-        const container = createCountdownElement()
-        execCountdown(container)
-      }
+      document.removeEventListener('keyup', handleKeyUpEvent)
+
+      running = false
     }
   }
 
   window.addEventListener('urlchange', () => main())
   main()
-
 })();

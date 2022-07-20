@@ -14,7 +14,7 @@
 //
 // @match           *://*.zoom.us/*
 //
-// @version         1.0
+// @version         1.1
 // @updateURL       https://raw.github.com/randywick/userscript-auto-close-zoom-tab/main/auto-close-zoom-tab.user.js
 //
 // @run-at          document-end

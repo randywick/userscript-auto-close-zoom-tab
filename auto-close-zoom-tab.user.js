@@ -10,6 +10,7 @@
 // @copyright       Copyright (C) 2012, by Randall Wick <randall.wick@airbnb.com>
 //
 // @grant           window.close
+// @grant           window.onurlchange
 //
 // @match           *://*.zoom.us/*
 //
@@ -144,18 +145,25 @@
     }
   }
 
-  if (/#success/.test(location.hash) === true) {
-    isPostAttendeeTab = true
-  } else {
-    const params = (new URL(document.location)).searchParams
-    if (params.has('mn')) {
-      isPostAttendeeTab = true
+  const main = async () => {
+    if (!isPostAttendeeTab) {
+      if (/#success/.test(location.hash) === true) {
+        isPostAttendeeTab = true
+      } else {
+        const params = (new URL(document.location)).searchParams
+        if (params.has('mn')) {
+          isPostAttendeeTab = true
+        }
+      }
+
+      if (isPostAttendeeTab) {
+        const container = createCountdownElement()
+        execCountdown(container)
+      }
     }
   }
 
-  if (isPostAttendeeTab) {
-    const container = createCountdownElement()
-    execCountdown(container)
-  }
+  window.addEventListener('onurlchange', () => main())
+  main()
 
 })();

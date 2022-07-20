@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name          	auto-close-zoom-tab
 // @description     Automatically closes Zoom meeting chrome tabs after a given delay.
+// @version         1.1.2
 //
 // @author          Randall Wick <randall.wick@airbnb.com>
 // @namespace       http://github.com/randywick
 // @downloadURL     https://github.com/randywick/userscript-auto-close-zoom-tab/raw/main/auto-close-zoom-tab.user.js
-// @version         1.1.2
 // @updateURL       https://github.com/randywick/userscript-auto-close-zoom-tab/raw/main/auto-close-zoom-tab.user.js
 // @license         GPLv3 - http://www.gnu.org/licenses/gpl-3.0.txt
 // @copyright       Copyright (C) 2012, by Randall Wick <randall.wick@airbnb.com>

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          	auto-close-zoom-tab
 // @description     Automatically closes Zoom's "Post-attendee" tabs left after joining a meeting.  Should work with both Zoom-branded and vanity URLs.
-// @version         1.1.5
+// @version         1.1.6
 //
 // @author          Randall Wick <randall.wick@airbnb.com>
 // @namespace       https://github.com/randywick
@@ -52,7 +52,9 @@
   let shouldAbort = false
   let container
   let content
+  let header
   let timer
+  let footer
 
   // If any of these tests passes, the script assumes the page is a post-attendee page.
   const locationTests = [
@@ -105,13 +107,14 @@
       flexFlow: 'column nowrap',
       alignItems: 'center',
       justifyContent: 'center',
+      textAlign: 'center',
       border: '1px solid black',
       padding: '20px',
       backgroundColor: '#34282C',
       transition: 'transform 1s, opacity 1s',
     })
 
-    const header = document.createElement('span')
+    header = document.createElement('span')
     Object.assign(header.style, {
       fontSize: '20px',
       webkitTextStroke: '1px black',
@@ -125,7 +128,7 @@
       webkitTextStroke: '1px black',
     })
 
-    const footer = document.createElement('span')
+    footer = document.createElement('span')
     footer.classList.add('aczt-footer')
     Object.assign(footer.style, {
       fontSize: '14px',
@@ -146,8 +149,13 @@
    */
   const closeTab = async () => {
     await sleep(400)
-    content.style.transform = 'rotate(5deg) translate(-20px, 40px)'
-    content.style.opacity = '0.3'
+    Object.assign(content.style, {
+      width: `${content.getBoundingClientRect().width}px`,
+      transform: 'rotate(5deg) translate(-20px, 40px)',
+      opacity: '0.3',
+    })
+
+    header.textContent = 'Once more unto the abyss, old tab...'
     footer.textContent = 'I don\'t want to go!'
     await sleep(300)
     window.close()
